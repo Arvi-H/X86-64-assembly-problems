@@ -26,8 +26,40 @@ long decode2 (long x, long y, long z) {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 
+/*
+    loop:
+        movl   %esi, %ecx   -> ecx = n;    
+        movl   $1, %edx     -> edx = 1;
+        movl   $0, %eax     -> eax = 0;
+        jmp    .L2          
+    .L3:
+        movq   %rdi, %r8    -> r8 = rdi
+        andq   %rdx, %r8    -> r8 & rdx
+        orq    %r8, %rax    -> r8 | result
+        salq   %cl, %rdx    -> rdx << n
+    .L2
+        testq  %rdx, %rdx   -> rdx & rdx
+        jne    .L3          -> != 0
+        rep; ret            -> repeat return
+*/
+
+// x in %rdi, n in %esi, result in %rax, mask in %rdx
+
+long loop(long x, long n) {
+    long result = 0;
+    long mask;
+    
+    for (mask = 1; mask != 0; mask <<= n) {    // DEBUG *****
+        result |= x & mask;
+    }
+
+    return result;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 
 
 
 
-int main(void) {}
+
+ 
