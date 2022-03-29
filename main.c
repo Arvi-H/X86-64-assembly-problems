@@ -28,15 +28,15 @@ long decode2 (long x, long y, long z) {
 
 /*
     loop:
-        movl   %esi, %ecx   -> ecx = n;    
-        movl   $1, %edx     -> edx = 1;
-        movl   $0, %eax     -> eax = 0;
+        movl   %esi, %ecx   -> cl = n;    
+        movl   $1, %edx     -> rdx = 1;
+        movl   $0, %eax     -> rax = 0;
         jmp    .L2          
     .L3:
-        movq   %rdi, %r8    -> r8 = rdi
+        movq   %rdi, %r8    -> r8 = x
         andq   %rdx, %r8    -> r8 & rdx
         orq    %r8, %rax    -> r8 | result
-        salq   %cl, %rdx    -> rdx << n
+        salq   %cl, %rdx    -> rdx <<= n
     .L2
         testq  %rdx, %rdx   -> rdx & rdx
         jne    .L3          -> != 0
@@ -58,8 +58,37 @@ long loop(long x, long n) {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 
+const int M;
 
+void transpose(long A[M][M]) {
+    long i, j;
+    for (i = 0; i < M; i++)
+        for (j = 0; j < i; j++) {
+            long t = A[i][j];
+            A[i][j] = A[j][i];
+            A[j][i] = t;
+        }
+}
 
+// When compiled with optimization level -O1, GCC
 
+/*
+    .L6:
+        movq   (%rdx), %rcx -> rcx = *rdx  
+        movq   (%rax), %rsi -> rsi = *rax  
+        movq   %rsi, (%rdx) -> *rdx = rsi = *rax // 
+        movq   %rcx, (%rax) -> *rax = rcx 
+        
+        addq   $8, %rdx     -> rdx += 8 (ptr)
+        addq   $120, %rax   -> rax += 120 (ptr)
 
+        cmpq   %rdi, %rax   -> if (rax - rdi) != 0
+        jne    .L6          ->  Recurse
+*/
+ 
+// Which register holds a pointer to array element A[i][j]? -> rdx
+
+// Which register holds a pointer to array element A[j][i]? -> rax
+
+// What is the value of M? -> M = 15 (120/8)
  
